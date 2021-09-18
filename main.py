@@ -12,12 +12,14 @@ from utils.buffer import ReplayBuffer
 from utils.env_wrappers import SubprocVecEnv, DummyVecEnv
 from algorithms.maddpg import MADDPG
 
-USE_CUDA = False  # torch.cuda.is_available()
+import formation_gym
 
-def make_parallel_env(env_id, n_rollout_threads, seed, discrete_action):
+USE_CUDA = torch.cuda.is_available()  # torch.cuda.is_available()
+
+def make_parallel_env(env_id, n_rollout_threads, seed, agent_num):
     def get_env_fn(rank):
         def init_env():
-            env = make_env(env_id, discrete_action=discrete_action)
+            env = formation_gym.make_env(env_id ,benchmark = False, num_agents = agent_num)
             env.seed(seed + rank * 1000)
             np.random.seed(seed + rank * 1000)
             return env
@@ -49,7 +51,7 @@ def run(config):
     if not USE_CUDA:
         torch.set_num_threads(config.n_training_threads)
     env = make_parallel_env(config.env_id, config.n_rollout_threads, config.seed,
-                            config.discrete_action)
+                            config.agent_num)
     maddpg = MADDPG.init_from_env(env, agent_alg=config.agent_alg,
                                   adversary_alg=config.adversary_alg,
                                   tau=config.tau,
@@ -118,26 +120,23 @@ def run(config):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("env_id", help="Name of environment")
-    parser.add_argument("model_name",
-                        help="Name of directory to store " +
+    parser.add_argument("--env_id", default='formation_hd_env', type = str, help="Name of environment", )
+    parser.add_argument("--model_name", default='model', type = str, help="Name of directory to store " +
                              "model/training contents")
-    parser.add_argument("--seed",
-                        default=1, type=int,
-                        help="Random seed")
+    parser.add_argument("--seed", default=1, type=int, help="Random seed")
     parser.add_argument("--n_rollout_threads", default=1, type=int)
     parser.add_argument("--n_training_threads", default=6, type=int)
-    parser.add_argument("--buffer_length", default=int(1e6), type=int)
+    parser.add_argument("--buffer_length", default=int(5e5), type=int)
     parser.add_argument("--n_episodes", default=25000, type=int)
-    parser.add_argument("--episode_length", default=25, type=int)
-    parser.add_argument("--steps_per_update", default=100, type=int)
+    parser.add_argument("--episode_length", default=30, type=int)
+    parser.add_argument("--steps_per_update", default=120, type=int)
     parser.add_argument("--batch_size",
-                        default=1024, type=int,
+                        default=256, type=int,
                         help="Batch size for model training")
     parser.add_argument("--n_exploration_eps", default=25000, type=int)
     parser.add_argument("--init_noise_scale", default=0.3, type=float)
     parser.add_argument("--final_noise_scale", default=0.0, type=float)
-    parser.add_argument("--save_interval", default=1000, type=int)
+    parser.add_argument("--save_interval", default=10000, type=int)
     parser.add_argument("--hidden_dim", default=64, type=int)
     parser.add_argument("--lr", default=0.01, type=float)
     parser.add_argument("--tau", default=0.01, type=float)
@@ -147,8 +146,8 @@ if __name__ == '__main__':
     parser.add_argument("--adversary_alg",
                         default="MADDPG", type=str,
                         choices=['MADDPG', 'DDPG'])
-    parser.add_argument("--discrete_action",
-                        action='store_true')
+    parser.add_argument("--discrete_action", action='store_true')
+    parser.add_argument("--agent-num", type=int, default = 9)
 
     config = parser.parse_args()
 
