@@ -26,7 +26,7 @@ def run(config):
 
     maddpg = MADDPG.init_from_save(model_path)
     env = formation_gym.make_env(config.env_id, False, config.agent_num)
-    maddpg.prep_rollouts(device='cpu')
+    maddpg.prep_rollouts(device='gpu') # cpu
     ifi = 1 / config.fps  # inter-frame interval
 
     for ep_i in range(config.n_episodes):
