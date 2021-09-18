@@ -14,7 +14,7 @@ from algorithms.maddpg import MADDPG
 
 import formation_gym
 
-USE_CUDA = torch.cuda.is_available()  # torch.cuda.is_available()
+USE_CUDA = False  # torch.cuda.is_available()
 
 def make_parallel_env(env_id, n_rollout_threads, seed, agent_num):
     def get_env_fn(rank):
@@ -124,8 +124,8 @@ if __name__ == '__main__':
     parser.add_argument("--model_name", default='model', type = str, help="Name of directory to store " +
                              "model/training contents")
     parser.add_argument("--seed", default=1, type=int, help="Random seed")
-    parser.add_argument("--n_rollout_threads", default=1, type=int)
-    parser.add_argument("--n_training_threads", default=6, type=int)
+    parser.add_argument("--n_rollout_threads", default=6, type=int) # 1
+    parser.add_argument("--n_training_threads", default=24, type=int) # 6
     parser.add_argument("--buffer_length", default=int(5e5), type=int)
     parser.add_argument("--n_episodes", default=25000, type=int)
     parser.add_argument("--episode_length", default=30, type=int)
