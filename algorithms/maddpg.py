@@ -40,10 +40,10 @@ class MADDPG(object):
         self.tau = tau
         self.lr = lr
         self.discrete_action = discrete_action
-        self.pol_dev = 'gpu'  # device for policies # cpu
-        self.critic_dev = 'gpu'  # device for critics
-        self.trgt_pol_dev = 'gpu'  # device for target policies
-        self.trgt_critic_dev = 'gpu'  # device for target critics
+        self.pol_dev = 'cpu'  # device for policies # cpu
+        self.critic_dev = 'cpu'  # device for critics
+        self.trgt_pol_dev = 'cpu'  # device for target policies
+        self.trgt_critic_dev = 'cpu'  # device for target critics
         self.niter = 0
 
     @property
@@ -224,7 +224,7 @@ class MADDPG(object):
         """
         Save trained parameters of all agents into one file
         """
-        self.prep_training(device='gpu')  # move parameters to CPU before saving # cpu
+        self.prep_training(device='cpu')  # move parameters to CPU before saving # cpu
         save_dict = {'init_dict': self.init_dict,
                      'agent_params': [a.get_params() for a in self.agents]}
         torch.save(save_dict, filename)
